@@ -8,9 +8,7 @@ if [ "x$RESOLVERS" = "x" ]; then
     exit 1
 fi
 
-# cat /redirects.conf.template | envsubst '$RESOLVERS' > /etc/nginx/conf.d/redirects.conf
-# cat /fider.conf.template | envsubst '$FIDER_URL $RESOLVERS' > /etc/nginx/conf.d/fider.conf
 cat /default.conf.template | envsubst '$CLIENT_MAX_BODY_SIZE $RESOLVERS' > /etc/nginx/conf.d/default.conf
-cat /nginx.conf.template | envsubst '$VALENT_PUMA_URL $FIDER_URL' > /etc/nginx/nginx.conf
+cat /nginx.conf.template | envsubst '$VALENT_PUMA_URL' > /etc/nginx/nginx.conf
 
 exec "$@"
