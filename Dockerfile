@@ -2,6 +2,10 @@ FROM nginx:1-alpine
 
 ENV CLIENT_MAX_BODY_SIZE 20M
 ENV VALENT_PUMA_URL puma:3000
+ENV BUDGET_BASE_PATH /budget
+ENV VALENT_API_HOST https://recar.io
+
+ADD apps apps
 
 COPY default.conf /default.conf.template
 COPY nginx.conf /nginx.conf.template

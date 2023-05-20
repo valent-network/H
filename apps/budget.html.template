@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Valent Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Valent Dashboard" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://recar.io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://recar.io/favicon-32x32.png">
+  <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="https://recar.io/apple-touch-icon.png">
+  <link rel="icon" type="image/svg+xml" href="https://recar.io/images/logo.svg">
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    body { min-height: 100vh }
+    footer { margin-top: auto; }
+    .container { min-width: 100vh }
+  </style>
+</head>
+<body class="is-flex is-flex-direction-column">
+  <nav class="navbar is-black has-shadow" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="$BUDGET_BASE_PATH">
+      <img src="https://recar.io/images/logo.svg" width="113">
+    </a>
+
+  </div>
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <div class="buttons">
+          <a class="button is-link is-light" href="/ios">
+            <i class="fa fa-apple"></i>
+            &nbsp;
+            <strong>AppStore</strong>
+          </a>
+          <a class="button is-link is-light" href="/android">
+            <i class="fa fa-android"></i>
+            &nbsp;
+            <strong>Play Store</strong>
+          </a>
+        </div>
+      </div>
+</nav>
+  <div class="container mt-6 mb-6" x-data="Models">
+    <template x-if="currentRoute === '/'">
+      <div>
+        <h1 class="is-size-1 title has-text-centered mb-6">Знайти авто на свій бюджет</h1>
+
+        <div class="box">
+          <div class="block">
+            <label class="label">Бюджет, $:</label>
+            <div class="field has-addons">
+              <p class="control is-expanded">
+                <input name="budget" class="input" type="number" pattern="/\d+/" placeholder="Бюджет" x-model.number="budget" x-on:input="filter">
+              </p>
+              <p class="control">
+                <a class="button is-static">
+                  $
+                </a>
+              </p>
+            </div>
+          </div>
+          <div class="block">
+            <p x-show="makerModels.length > 0" x-html="`Знайдено <b>${makerModels.length}</b> моделей серед <b>${makers.length}</b> виробників`"></p>
+          </div>
+          <div class="block">
+            <template x-for="maker in excludedMakers">
+              <button class="button is-rounded is-small is-primary is-light mr-2 mb-2" x-text="`${maker} +`" x-on:click="(excludedMakers = excludedMakers.filter(m => m !== maker)) && filter()"></button>
+            </template><template x-for="maker in makers">
+              <button class="button is-rounded is-small is-danger is-light mr-2 mb-2" x-text="`${maker} &times;`" x-on:click="excludedMakers.push(maker) && filter()"></button>
+            </template>
+          </div>
+
+          <div class="block">
+            <div x-show="makerModels.length > 0" x-html="renderedModels"></div>
+            <div x-show="makerModels.length === 0">Не знайдено</div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template x-if="currentRoute === '/:maker/:model'">
+      <div class="box">
+        <a href="$BUDGET_BASE_PATH">← Змінити бюджет</a>
+        <h2 class='title is-size-2' x-text="`${params.maker} ${params.model}`"></h2>
+        <template x-for="model in records.filter(m => m.maker === params.maker && m.model === params.model)">
+          <div x-html="renderModel(model)"></div>
+        </template>
+      </div>
+    </template>
+
+    <template x-if="currentRoute === '/:maker/:model/:year'">
+      <div class="box">
+        <a x-on:click.prevent="history.back()" href="#" x-text="`← ${params.maker} ${params.model}`"></a>
+        <h1 class="title is-size-1 has-text-centered">Рекаріо!</h1>
+        <p><b>СТОП</b>. Цей час настав — купуй автомобілі по-новому!</p>
+        <p>Тільки у друзів та знайомих за рекомендацією.</p>
+        <p>Завантаж додаток за посиланнями зверху.</p>
+        <p>Або приєднуйся до нашого інстаграму, щоб дізнатися більше</p>
+      </div>
+    </template>
+  </div>
+
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <a href="/news">
+        <i class="is-size-3 mr-3 fa fa-telegram big-icon"></i>
+      </a>
+      <a href="/ios">
+        <i class="is-size-3 mr-3 fa fa-apple big-icon"></i>
+      </a>
+      <a href="/android">
+        <i class="is-size-3 mr-3 fa fa-android big-icon"></i>
+      </a>
+      <a href="https://github.com/valent-network/">
+        <i class="is-size-3 mr-3 fa fa-github big-icon"></i>
+      </a>
+      <a href="https://www.instagram.com/recar.io/">
+        <i class="is-size-3 mr-3 fa fa-instagram big-icon"></i>
+      </a>
+    </div>
+  </footer>
+
+  <script type="text/javascript">
+    const BASE_PATH = "$BUDGET_BASE_PATH";
+    const API_URL = "$VALENT_API_HOST/api/integrations/budget";
+
+    function Models() {
+      return {
+        init() {
+          window.addEventListener("popstate", () => this.router())
+          window.addEventListener("load", () => this.router())
+          return fetch(`${API_URL}?etag=${this.etag}`).then(response => response.status === 304 ? { records: this.records, etag: this.etag } : response.json()).then(data => {
+            this.records = data.records
+            this.etag = data.etag;
+            this.filter();
+            return this.records
+          }).catch(error => console.log(error))
+        },
+        router() {
+          const route = window.location.pathname.replace(BASE_PATH, '');
+
+          if (route === "/") {
+            this.currentRoute = "/";
+          } else if (/^\/[^\/]+\/[^\/]+(\/)?$/.test(route)) {
+            this.params = { maker: decodeURI(route.split("/")[1]) , model: decodeURI(route.split("/")[2]) }
+            this.currentRoute = "/:maker/:model";
+            document.title = `recar.io | Купити ${this.params.maker} ${this.params.model} за $${this.budget}`
+          } else if (/^\/[^\/]+\/[^\/]+\/\d\d\d\d(\/)?$/.test(route)) {
+            this.params = { maker: decodeURI(route.split("/")[1]) , model: decodeURI(route.split("/")[2]), year: decodeURI(route.split("/")[3]) }
+            this.currentRoute = "/:maker/:model/:year";
+            document.title = `recar.io | Купити ${this.params.maker} ${this.params.model} ${this.params.year} р.`
+          } else {
+            this.currentRoute = "/404";
+          }
+
+          console.log(route)
+        },
+        filter() {
+          const scope = this.records
+            .filter(r => parseInt(r.min_price) <= parseInt(this.budget) && parseInt(r.max_price) >= parseInt(this.budget))
+            .filter(r => !this.excludedMakers.includes(r.maker))
+          this.makerModels = this.groupByMakerModel(scope)
+          this.makers = this.makersFrom(this.makerModels);
+          this.renderedModels = this.makers.map(maker => {
+            return `
+              <h2 class="title is-size-2 mt-6">${maker}</h2>
+              ${this.makerModels.filter(m => m.maker === maker).map(model => this.renderModel(model)).join("")}
+            `
+          }).join("")
+
+          return scope;
+        },
+        makersFrom(models) {
+          result = models.reduce((keys, obj) => {
+            keys.add(obj.maker);
+            return keys;
+          }, new Set());
+
+          return Array.from(result)
+        },
+        groupByMakerModel(data){
+          return data.reduce((result, current) => {
+            const { maker, model, year, min_price, max_price, avg_price } = current;
+            const existingItem = result.find(item => item.maker === maker && item.model === model);
+
+            if (existingItem) {
+              existingItem.min_year = Math.min(existingItem.min_year, year);
+              existingItem.min_price = Math.min(existingItem.min_price, min_price);
+              existingItem.max_year = Math.max(existingItem.max_year, year);
+              existingItem.max_price = Math.max(existingItem.max_price, max_price);
+              existingItem.grouped = true
+            } else {
+              result.push({ maker, model, min_price, max_price, min_year: year, max_year: year, grouped: true });
+            }
+
+            return result;
+          }, []);
+        },
+        renderModel(model) {
+          const yearString = model.grouped ? (model.min_year === model.max_year ? `<span>${model.min_year} р.</span>` : `<span>${model.min_year} — ${model.max_year}</span> рр.`)
+                                     : `<span>${model.year} р.</span>`;
+          const href = model.grouped ? `${BASE_PATH}/${model.maker}/${model.model}` : `${BASE_PATH}/${model.maker}/${model.model}/${model.year}`
+
+          return `
+            <a href="${href}">
+              <div class="columns">
+                <div class="column mt-3">
+                <h5 class="title is-size-5">${model.maker} ${model.model} <sup class='is-size-7'>${yearString}</sup></h5>
+                  
+                  <p>від <b class="has-text-success">$${model.min_price}</b> до <b class="has-text-success">$${model.max_price}</b></p>
+                </div>
+
+                <div class="column is-one-fifth mt-3 has-text-right m-auto is-size-3">→</div>
+              </div>
+                <hr />
+            </a>
+            `
+        },
+        records: Alpine.$persist([]).as("budget.data"),
+        budget: Alpine.$persist(10000).as("budget.price"),
+        excludedMakers: Alpine.$persist([]).as("budget.excludedMakers"),
+        etag: Alpine.$persist(Number.MAX_SAFE_INTEGER).as("budget.etag"),
+        renderedModels: "Не знайдено",
+        currentRoute: '/',
+        makerModels: [],
+        makers: [],
+        params: {},
+      }
+    }
+  </script>
+</body>
+</html>

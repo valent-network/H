@@ -11,4 +11,9 @@ fi
 cat /default.conf.template | envsubst '$CLIENT_MAX_BODY_SIZE $RESOLVERS' > /etc/nginx/conf.d/default.conf
 cat /nginx.conf.template | envsubst '$VALENT_PUMA_URL' > /etc/nginx/nginx.conf
 
+mkdir -p /var/www/nginx/budget      && cat /apps/budget.html.template       | envsubst '$BUDGET_BASE_PATH $VALENT_API_HOST' > /var/www/nginx/budget/index.html
+mkdir -p /var/www/nginx/dashboard   && cat /apps/dashboard.html.template    | envsubst '$VALENT_API_HOST'                   > /var/www/nginx/dashboard/index.html
+mkdir -p /var/www/nginx/ad          && cat /apps/ad.html.template           | envsubst ''                                   > /var/www/nginx/ad/index.html
+mkdir -p /var/www/nginx/filters     && cat /apps/filters.html.template      | envsubst ''                                   > /var/www/nginx/filters/index.html
+
 exec "$@"
