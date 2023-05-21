@@ -36,30 +36,32 @@
       </div>
 
       <template x-if="data">
-        <table x-show="data" class="table is-fullwidth is-bordered is-hoverable is-striped is-narrow mt-4 mb-26">
-          <thead>
-            <tr>
-              <th>Updated At</th>
-              <th>Last User</th>
-              <th>Last Ad</th>
-              <th>Last Effective Ad</th>
-              <th>last Message</th>
-              <th>Last ChatRoom</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td x-text="(new Date(data.updated_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })"></td>
-              <td x-text="(new Date(data.last_user_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-              <td x-text="(new Date(data.last_ad_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-              <td x-text="(new Date(data.last_effective_ad_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-              <td x-text="(new Date(data.last_message_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-              <td x-text="(new Date(data.last_chat_room_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-              <td><button x-show="token" class="button is-danger is-small" x-on:click="token = null">Log out</button></td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-container">
+          <table x-show="data" class="table is-fullwidth is-bordered is-hoverable is-striped is-narrow mt-4 mb-26">
+            <thead>
+              <tr>
+                <th>Updated At</th>
+                <th>Last User</th>
+                <th>Last Ad</th>
+                <th>Last Effective Ad</th>
+                <th>last Message</th>
+                <th>Last ChatRoom</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td x-text="(new Date(data.updated_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })"></td>
+                <td x-text="(new Date(data.last_user_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                <td x-text="(new Date(data.last_ad_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                <td x-text="(new Date(data.last_effective_ad_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                <td x-text="(new Date(data.last_message_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                <td x-text="(new Date(data.last_chat_room_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                <td><button x-show="token" class="button is-danger is-small" x-on:click="token = null">Log out</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </template>
 
       <template x-if="data" >
