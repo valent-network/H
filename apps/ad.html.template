@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Рекаріо | Оголошення</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Рекаріо | Оголошення" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="$VALENT_API_HOST/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="$VALENT_API_HOST/favicon-32x32.png">
+  <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="$VALENT_API_HOST/apple-touch-icon.png">
+  <link rel="icon" type="image/svg+xml" href="$VALENT_API_HOST/images/logo.svg">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    body { min-height: 100vh }
+    footer { margin-top: auto; }
+    .breakable-string { white-space: normal!important; word-wrap: anywhere!important; height: auto!important; }
+    .card{ max-width: 768px;  }
+  </style>
+</head>
+<body x-data="App">
+  <nav class="navbar is-black has-shadow" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/">
+        <img src="$VALENT_API_HOST/images/logo.svg" width="64">
+        <h1 class="title is-size-3 m-auto">Рекаріо</h1>
+      </a>
+    </div>
+  </nav>
+  <div class="container mt-2 mb-2 p-2">
+    <template x-if="data">
+      <div class="card m-auto">
+        <iframe x-bind:src="`recarioapp://visited/ads/${data.id}/`" style="display: none;"></iframe>
+        <div class="card-image">
+          <figure class="image is-fullwidth">
+            <img x-bind:src="data.image" alt="Placeholder image">
+          </figure>
+        </div>
+        <div class="card-content">
+          <div class="content">
+            <h1 x-text="data.title"></h1>
+            <h2 class="has-text-success" x-text="`$${data.price}`"></h2>
+            <div class="block">
+              <template x-for="option in data.options">
+                <span class="tag is-large mr-4 mt-4 is-primary is-link breakable-string">
+                  <span  x-text="`${option[0]}: ${option[1]}`">
+                </span>
+              </template>
+            </div>
+            <blockquote x-text="data.short_description"></blockquote>
+            <blockquote x-text="data.description"></blockquote>
+            <p>Хочеш дізнатися більше про спільних друзів? Завантажуй додаток!</p>
+          </div>
+        </div>
+        <footer class="card-footer">
+          <a x-bind:href="`recarioapp://visited/ads/${data.id}/`" class="card-footer-item has-background-info has-text-white has-text-centered">
+            Відкрити в Рекаріо
+          </a>
+          <a class="card-footer-item" href="/ios">
+            <span class="is-hidden-mobile">
+              <strong>Завантажити </strong>
+              &nbsp;
+            </span>
+              <i class="fa fa-apple"></i>
+            <span class="is-hidden-mobile">
+              &nbsp;
+              <strong>AppStore</strong>
+            </span>
+          </a>
+            <a class="card-footer-item" href="/android">
+              <span class="is-hidden-mobile">
+                <strong>Завантажити </strong>
+                &nbsp;
+              </span>
+                <i class="fa fa-android"></i>
+              <span class="is-hidden-mobile">
+                &nbsp;
+                <strong>Play Store</strong>
+              </span>
+            </a>
+        </footer>
+      </div>
+    </template>
+  </div>
+  <script type="text/javascript">
+    const API_URL = "$VALENT_API_HOST/api/v1/public_ads";
+
+    function App() {
+      return {
+        init() {
+          const id = window.location.pathname.match(/\/(\d+)\/?$/)[1];
+          fetch(`${API_URL}/${id}/`).then(response => response.json()).then(data => {
+            this.data = data;
+            document.title = `Рекаріо | ${data.title} ${data.short_description} $${data.price} ${data.options.location[1]}`;
+          });
+        },
+        data: null
+      }
+    }
+  </script>
+</body>
+</html>
