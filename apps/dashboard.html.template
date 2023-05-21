@@ -15,8 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </head>
-<body x-data="{token:$persist(null).as('dashboard.token')}">
-
+<body x-data="App">
   <div class="container is-fluid mt-4">
     <template x-if="!token"> 
       <div class="field">
@@ -25,113 +24,114 @@
         </div>
       </div>
     </template>
-    
-  </div>
+    <template x-if="token">
+      <div>
+        <div class="has-text-centered">
+          <p x-show="!data && !error">Loading...</p>
+          <p x-show="!data && error" x-text="error">Error</p>
+          <button x-show="error" class="button is-danger mt-4" x-on:click="token = null">Reset token</button>
+        </div>
+        <template x-if="data">
+          <div>
+            <div class="table-container">
+              <table x-show="data" class="table is-fullwidth is-bordered is-hoverable is-striped is-narrow mt-4 mb-26">
+                <thead>
+                  <tr>
+                    <th>Updated At</th>
+                    <th>Last User</th>
+                    <th>Last Ad</th>
+                    <th>Last Effective Ad</th>
+                    <th>last Message</th>
+                    <th>Last ChatRoom</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td x-text="(new Date(data.updated_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })"></td>
+                    <td x-text="(new Date(data.last_user_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                    <td x-text="(new Date(data.last_ad_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                    <td x-text="(new Date(data.last_effective_ad_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                    <td x-text="(new Date(data.last_message_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                    <td x-text="(new Date(data.last_chat_room_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
+                    <td><button x-show="token" class="button is-danger is-small" x-on:click="token = null">Log out</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="columns" x-init="drawCharts(data)">
+              <div class='column is-one-third'>
+                <div class='mb-3'>
+                  <canvas id="MAU"></canvas>
+                </div>
+                <div class='mb-3'>
+                  <canvas id="DAU"></canvas>
+                </div>
+                <div class='mb-3'>
+                  <canvas id="DVA"></canvas>
+                </div>
+              </div>
+              <div class='column is-one-third'>
+                <div class='mb-3'>
+                  <H1 class="is-size-1">Ads</H1>
+                  <canvas class='m-auto' id="Ads"></canvas>
+                </div>
+                <div class='mb-3'>
+                  <H1 class="is-size-1">Users</H1>
+                  <canvas class='m-auto' id="Users"></canvas>
+                </div>
+                <div class='mb-3'>
+                  <H1 class="is-size-1">Devices</H1>
+                  <canvas class='m-auto' id="Devices"></canvas>
+                </div>
 
-  <template x-if="token"> 
-    <div class="container is-fluid" x-data="dashboardData()" x-init="getDashboardData(token)">
-      <div class="has-text-centered">
-        <p x-show="!data && !error">Loading...</p>
-        <p x-show="!data && error" x-text="error">Error</p>
-        <button x-show="error" class="button is-danger mt-4" x-on:click="token = null">Reset token</button>
+              </div>
+              <div class='column is-one-third'>
+                <div class='mb-3'>
+                  <H1 class="is-size-1">Active Ads</H1>
+                  <canvas class='m-auto' id="ActiveAds"></canvas>
+                </div>
+                <div class='mb-3'>
+                  <H1 class="is-size-1">Users With Contacts</H1>
+                  <canvas class='m-auto' id="UsersWithContacts"></canvas>
+                </div>
+                <div class='mb-3'>
+                  <H1 class="is-size-1">User Contacts</H1>
+                  <canvas class='m-auto' id="UserContacts"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
-
-      <template x-if="data">
-        <div class="table-container">
-          <table x-show="data" class="table is-fullwidth is-bordered is-hoverable is-striped is-narrow mt-4 mb-26">
-            <thead>
-              <tr>
-                <th>Updated At</th>
-                <th>Last User</th>
-                <th>Last Ad</th>
-                <th>Last Effective Ad</th>
-                <th>last Message</th>
-                <th>Last ChatRoom</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td x-text="(new Date(data.updated_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })"></td>
-                <td x-text="(new Date(data.last_user_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-                <td x-text="(new Date(data.last_ad_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-                <td x-text="(new Date(data.last_effective_ad_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-                <td x-text="(new Date(data.last_message_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-                <td x-text="(new Date(data.last_chat_room_created_at)).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })"></td>
-                <td><button x-show="token" class="button is-danger is-small" x-on:click="token = null">Log out</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </template>
-
-      <template x-if="data" >
-        <div class="columns" x-init="drawCharts(data)">
-          <div class='column is-one-third'>
-            <div class='mb-3'>
-              <canvas id="MAU"></canvas>
-            </div>
-            <div class='mb-3'>
-              <canvas id="DAU"></canvas>
-            </div>
-            <div class='mb-3'>
-              <canvas id="DVA"></canvas>
-            </div>
-          </div>
-          <div class='column is-one-third'>
-            <div class='mb-3'>
-              <H1 class="is-size-1">Ads</H1>
-              <canvas class='m-auto' id="Ads"></canvas>
-            </div>
-            <div class='mb-3'>
-              <H1 class="is-size-1">Users</H1>
-              <canvas class='m-auto' id="Users"></canvas>
-            </div>
-            <div class='mb-3'>
-              <H1 class="is-size-1">Devices</H1>
-              <canvas class='m-auto' id="Devices"></canvas>
-            </div>
-
-          </div>
-          <div class='column is-one-third'>
-            <div class='mb-3'>
-              <H1 class="is-size-1">Active Ads</H1>
-              <canvas class='m-auto' id="ActiveAds"></canvas>
-            </div>
-            <div class='mb-3'>
-              <H1 class="is-size-1">Users With Contacts</H1>
-              <canvas class='m-auto' id="UsersWithContacts"></canvas>
-            </div>
-            <div class='mb-3'>
-              <H1 class="is-size-1">User Contacts</H1>
-              <canvas class='m-auto' id="UserContacts"></canvas>
-            </div>
-          </div>
-        </div>
-      </template>
-    </div>
-  </template>
+    </template>
+  </div>
 
   <script type="text/javascript">
     const API_URL = "${VALENT_API_HOST}/api/integrations/dashboard";
 
-    function dashboardData() {
+    function App() {
       return {
+        token: Alpine.$persist(null).as('dashboard.token'),
         data: Alpine.$persist(null).as('dashboard.data'),
         error: null,
+        init() {
+          this.getDashboardData();
+        },
         drawCharts(data) {
-          new Chart(document.getElementById('MAU'), basicLineChart("MAU", JSON.parse(data.mau_chart_data)), "month");
-          new Chart(document.getElementById('DAU'), basicLineChart("DAU", JSON.parse(data.user_activity_chart_data)), "day");
-          new Chart(document.getElementById('DVA'), basicLineChart("DVA", JSON.parse(data.visited_ad_chart_data)), "day");
+          console.log(data)
+          new Chart(document.getElementById('MAU'), basicLineChart("MAU", JSON.parse(data.mau_chart_data).map( x => ({count: x.count, date: (new Date(x.date+"-01")).toLocaleString('en-US', { month: 'long' })}))));
+          new Chart(document.getElementById('DAU'), timeLineChart("DAU", JSON.parse(data.user_activity_chart_data)), "week");
+          new Chart(document.getElementById('DVA'), timeLineChart("DVA", JSON.parse(data.visited_ad_chart_data)), "week");
           new Chart(document.getElementById('Ads'), basePieChart([data.known_ads_count, data.ads_count - data.known_ads_count], ['Known', 'Unknown']));
           new Chart(document.getElementById('Users'), basePieChart([data.users_count - data.users_with_no_contacts_count, data.users_with_no_contacts_count], ['w Contacts', 'w/o Contacts']));
           new Chart(document.getElementById('ActiveAds'), basePieChart([data.effective_ads_count, data.active_ads_count - data.effective_ads_count], ['Effective', 'Other']));
           new Chart(document.getElementById('Devices'), basePieChart(JSON.parse(data.user_devices_os_data).map(d => d.count), JSON.parse(data.user_devices_os_data).map(d => d.os_title)));
           new Chart(document.getElementById('UsersWithContacts'), basePieChart([((data.users_count - data.users_with_no_contacts_count) - data.users_with_no_connections_count), data.users_with_no_connections_count], ['Have Connections', 'No Connections']));
-          new Chart(document.getElementById('UserContacts'), basePieChart([data.uniq_user_contacts_count, data.user_contacts_count - data.uniq_user_contacts_count], ['Unique', 'Duplicate']));
+          new Chart(document.getElementById('UserContacts'), basePieChart([data.user_contacts_count - data.uniq_user_contacts_count, data.uniq_user_contacts_count], ['Duplicate', 'Unique']));
         },
-        getDashboardData(token) {
-          return fetch(`${API_URL}?access_token=${token}`)
+        getDashboardData() {
+          return fetch(`${API_URL}?access_token=${this.token}`)
             .then(response => response.json())
             .then(data => this.data = data.records[0])
             .catch(error => this.error = error)
@@ -140,8 +140,25 @@
       }
     }
 
+    function timeLineChart (chartName, data, timeUnit) {
+      return {
+        ...basicLineChart(chartName, data),
+        options: {
+          ...basicLineChart(chartName, data).options,
+          scales: {
+              x: {
+                  type: 'time',
+                  time: {
+                      unit: timeUnit
+                  }
+              }
+          }
+        }
+      }
+    }
 
-    function basicLineChart (chartName, data, timeUnit) {
+
+    function basicLineChart (chartName, data) {
       return {
         type: 'line',
         data: {
@@ -155,14 +172,6 @@
             xAxisKey: 'date',
             yAxisKey: 'count'
           },
-          scales: {
-            x: {
-                type: 'time',
-                time: {
-                    unit: timeUnit,
-                }
-            }
-        }
         }
       }
     }
