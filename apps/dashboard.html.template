@@ -119,86 +119,80 @@
           this.getDashboardData();
         },
         drawCharts(data) {
-          console.log(data)
-          new Chart(document.getElementById('MAU'), basicLineChart("MAU", JSON.parse(data.mau_chart_data).map( x => ({count: x.count, date: (new Date(x.date+"-01")).toLocaleString('en-US', { month: 'long' })}))));
-          new Chart(document.getElementById('DAU'), timeLineChart("DAU", JSON.parse(data.user_activity_chart_data)), "week");
-          new Chart(document.getElementById('DVA'), timeLineChart("DVA", JSON.parse(data.visited_ad_chart_data)), "week");
-          new Chart(document.getElementById('Ads'), basePieChart([data.known_ads_count, data.ads_count - data.known_ads_count], ['Known', 'Unknown']));
-          new Chart(document.getElementById('Users'), basePieChart([data.users_count - data.users_with_no_contacts_count, data.users_with_no_contacts_count], ['w Contacts', 'w/o Contacts']));
-          new Chart(document.getElementById('ActiveAds'), basePieChart([data.effective_ads_count, data.active_ads_count - data.effective_ads_count], ['Effective', 'Other']));
-          new Chart(document.getElementById('Devices'), basePieChart(JSON.parse(data.user_devices_os_data).map(d => d.count), JSON.parse(data.user_devices_os_data).map(d => d.os_title)));
-          new Chart(document.getElementById('UsersWithContacts'), basePieChart([((data.users_count - data.users_with_no_contacts_count) - data.users_with_no_connections_count), data.users_with_no_connections_count], ['Have Connections', 'No Connections']));
-          new Chart(document.getElementById('UserContacts'), basePieChart([data.user_contacts_count - data.uniq_user_contacts_count, data.uniq_user_contacts_count], ['Duplicate', 'Unique']));
+          const mappedMAUData = JSON.parse(data.mau_chart_data).map( x => ({count: x.count, date: (new Date(x.date+"-01")).toLocaleString('en-US', { month: 'long' })}));
+
+          new Chart(document.getElementById('MAU'), this.basicLineChart("MAU", mappedMAUData));
+          new Chart(document.getElementById('DAU'), this.timeLineChart("DAU", JSON.parse(data.user_activity_chart_data)), "week");
+          new Chart(document.getElementById('DVA'), this.timeLineChart("DVA", JSON.parse(data.visited_ad_chart_data)), "week");
+          new Chart(document.getElementById('Ads'), this.basePieChart([data.known_ads_count, data.ads_count - data.known_ads_count], ['Known', 'Unknown']));
+          new Chart(document.getElementById('Users'), this.basePieChart([data.users_count - data.users_with_no_contacts_count, data.users_with_no_contacts_count], ['w Contacts', 'w/o Contacts']));
+          new Chart(document.getElementById('ActiveAds'), this.basePieChart([data.effective_ads_count, data.active_ads_count - data.effective_ads_count], ['Effective', 'Other']));
+          new Chart(document.getElementById('Devices'), this.basePieChart(JSON.parse(data.user_devices_os_data).map(d => d.count), JSON.parse(data.user_devices_os_data).map(d => d.os_title)));
+          new Chart(document.getElementById('UsersWithContacts'), this.basePieChart([((data.users_count - data.users_with_no_contacts_count) - data.users_with_no_connections_count), data.users_with_no_connections_count], ['Have Connections', 'No Connections']));
+          new Chart(document.getElementById('UserContacts'), this.basePieChart([data.user_contacts_count - data.uniq_user_contacts_count, data.uniq_user_contacts_count], ['Duplicate', 'Unique']));
         },
         getDashboardData() {
           return fetch(`${API_URL}?access_token=${this.token}`)
             .then(response => response.json())
             .then(data => this.data = data.records[0])
             .catch(error => this.error = error)
-
-        }
-      }
-    }
-
-    function timeLineChart (chartName, data, timeUnit) {
-      return {
-        ...basicLineChart(chartName, data),
-        options: {
-          ...basicLineChart(chartName, data).options,
-          scales: {
-              x: {
-                  type: 'time',
-                  time: {
-                      unit: timeUnit
+        },
+        timeLineChart (chartName, data, timeUnit) {
+          return {
+            ...this.basicLineChart(chartName, data),
+            options: {
+              ...this.basicLineChart(chartName, data).options,
+              scales: {
+                  x: {
+                      type: 'time',
+                      time: {
+                          unit: timeUnit
+                      }
                   }
               }
+            }
+          }
+        },
+        basicLineChart (chartName, data) {
+          return {
+            type: 'line',
+            data: {
+              datasets: [{
+                label: chartName,
+                data: data
+              }]
+            },
+            options: {
+              parsing: {
+                xAxisKey: 'date',
+                yAxisKey: 'count'
+              },
+            }
+          }
+        },
+        basePieChart (data, labels) {
+          return {
+            type: 'pie',
+            data: {
+              datasets: [{
+                data: data,
+              }],
+            labels: labels,
+            },
+            options: {
+              responsive: false,
+              plugins: {
+                  tooltip: {
+                      callbacks: {
+                          label: (Item) => ' ' + Item.label + ' ' + Item.formattedValue + ' (' + (((Item.raw  / data.reduce((accumulator, currentValue) => accumulator + currentValue, 0)) * 100).toFixed()) + '%)'
+                      }
+                  }
+              },
+            }
           }
         }
       }
     }
-
-
-    function basicLineChart (chartName, data) {
-      return {
-        type: 'line',
-        data: {
-          datasets: [{
-            label: chartName,
-            data: data
-          }]
-        },
-        options: {
-          parsing: {
-            xAxisKey: 'date',
-            yAxisKey: 'count'
-          },
-        }
-      }
-    }
-
-    function basePieChart (data, labels) {
-      return {
-        type: 'pie',
-        data: {
-          datasets: [{
-            data: data,
-          }],
-        labels: labels,
-        },
-        options: {
-          responsive: false,
-          plugins: {
-              tooltip: {
-                  callbacks: {
-                      label: (Item) => ' ' + Item.label + ' ' + Item.formattedValue + ' (' + (((Item.raw  / data.reduce((accumulator, currentValue) => accumulator + currentValue, 0)) * 100).toFixed()) + '%)'
-                  }
-              }
-          },
-
-        }
-      }
-    }
-
   </script>
 </body>
 </html>
