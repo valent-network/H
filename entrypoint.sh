@@ -16,4 +16,6 @@ mkdir -p /var/www/nginx/dashboard   && cat /apps/dashboard.html.template    | en
 mkdir -p /var/www/nginx/ad          && cat /apps/ad.html.template           | envsubst ''                                   > /var/www/nginx/ad/index.html
 mkdir -p /var/www/nginx/filters     && cat /apps/filters.html.template      | envsubst ''                                   > /var/www/nginx/filters/index.html
 
+mv /apps/landing /var/www/nginx
+
 exec "$@"

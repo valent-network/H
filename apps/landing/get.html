@@ -1,0 +1,9 @@
+<script>
+  if (window.navigator.userAgent.match(/Android/i)) {
+    window.location.replace('https://recar.io/android');
+  } else if (window.navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+    window.location.replace('https://recar.io/ios');
+  } else {
+    window.location.replace('https://recar.io/go');
+  }
+</script>
