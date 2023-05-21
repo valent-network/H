@@ -20,13 +20,12 @@
 </head>
 <body class="is-flex is-flex-direction-column" x-data="App">
   <nav class="navbar is-black has-shadow" role="navigation" aria-label="main navigation">
-  <div class="navbar-brand">
-    <a class="navbar-item" href="$BUDGET_BASE_PATH">
-      <img src="https://recar.io/images/logo.svg" width="64">
-      <h1 class="title is-size-3 m-auto">Рекаріо</h1>
-    </a>
-
-  </div>
+    <div class="navbar-brand">
+      <a class="navbar-item" href="$BUDGET_BASE_PATH">
+        <img src="https://recar.io/images/logo.svg" width="64">
+        <h1 class="title is-size-3 m-auto">Рекаріо</h1>
+      </a>
+    </div>
     <div class="navbar-end">
       <div class="navbar-item">
         <div class="buttons">
@@ -42,7 +41,8 @@
           </a>
         </div>
       </div>
-</nav>
+    </div>
+  </nav>
   <div class="container mt-6 mb-6">
     <template x-if="currentRoute === '/'">
       <div>
