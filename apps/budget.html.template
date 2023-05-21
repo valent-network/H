@@ -16,7 +16,6 @@
   <style>
     body { min-height: 100vh }
     footer { margin-top: auto; }
-    .container { min-width: 100vh }
   </style>
 </head>
 <body class="is-flex is-flex-direction-column">
