@@ -13,6 +13,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </head>
 <body x-data="{token:$persist(null).as('dashboard.token')}">
 
@@ -119,9 +120,9 @@
         data: Alpine.$persist(null).as('dashboard.data'),
         error: null,
         drawCharts(data) {
-          new Chart(document.getElementById('MAU'), basicLineChart("MAU", JSON.parse(data.mau_chart_data)));
-          new Chart(document.getElementById('DAU'), basicLineChart("DAU", JSON.parse(data.user_activity_chart_data)));
-          new Chart(document.getElementById('DVA'), basicLineChart("DVA", JSON.parse(data.visited_ad_chart_data)));
+          new Chart(document.getElementById('MAU'), basicLineChart("MAU", JSON.parse(data.mau_chart_data)), "month");
+          new Chart(document.getElementById('DAU'), basicLineChart("DAU", JSON.parse(data.user_activity_chart_data)), "day");
+          new Chart(document.getElementById('DVA'), basicLineChart("DVA", JSON.parse(data.visited_ad_chart_data)), "day");
           new Chart(document.getElementById('Ads'), basePieChart([data.known_ads_count, data.ads_count - data.known_ads_count], ['Known', 'Unknown']));
           new Chart(document.getElementById('Users'), basePieChart([data.users_count - data.users_with_no_contacts_count, data.users_with_no_contacts_count], ['w Contacts', 'w/o Contacts']));
           new Chart(document.getElementById('ActiveAds'), basePieChart([data.effective_ads_count, data.active_ads_count - data.effective_ads_count], ['Effective', 'Other']));
@@ -140,7 +141,7 @@
     }
 
 
-    function basicLineChart (chartName, data) {
+    function basicLineChart (chartName, data, timeUnit) {
       return {
         type: 'line',
         data: {
@@ -153,7 +154,15 @@
           parsing: {
             xAxisKey: 'date',
             yAxisKey: 'count'
-          }
+          },
+          scales: {
+            x: {
+                type: 'time',
+                time: {
+                    unit: timeUnit,
+                }
+            }
+        }
         }
       }
     }
