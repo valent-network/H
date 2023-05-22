@@ -14,6 +14,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <script src="https://raw.githack.com/SortableJS/Sortable/master/Sortable.js"></script>
 </head>
 <body x-data="App">
   <div class="container is-fluid mt-4">
@@ -103,20 +104,49 @@
             </div>
           </div>
         </template>
+
+        <template x-if="settings">
+          <div class="mb-6">
+            <div id="categories">
+              <template x-for="category in settings.categories.sort((a,b) => a.position - b.position)" x-i>
+                <div x-bind:data-id="category.id" class="category box">
+                  <div x-text="category.name"></div>
+                  <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+                    <tbody>
+                      <template x-for="option in category.ad_option_types.sort((a,b) => a.position - b.position)">
+                        <tr x-bind:data-id="option.id" class="option">
+                          <td x-text="option.localized_name"></td>
+                          <td>
+                            <template x-for="value in option.values.sort((a,b) => a.position - b.position)">
+                              <span x-bind:data-id="value.id" class="option-value tag mr-1 mb-1 is-light is-link" x-text="value.name"></span>
+                            </template>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </template>
+
+              <button @click="updateSettings()" class="button is-light is-info">Update</button>
+            </div>
+        </template>
       </div>
     </template>
   </div>
 
   <script type="text/javascript">
-    const API_URL = "${VALENT_API_HOST}/api/integrations/dashboard";
+    const API_URL = "$VALENT_API_HOST";
 
     function App() {
       return {
         token: Alpine.$persist(null).as('dashboard.token'),
         data: Alpine.$persist(null).as('dashboard.data'),
+        settings: null,
         error: null,
         init() {
           this.getDashboardData();
+          this.getSettings();
         },
         drawCharts(data) {
           const mappedMAUData = JSON.parse(data.mau_chart_data).map( x => ({count: x.count, date: (new Date(x.date+"-01")).toLocaleString('en-US', { month: 'long' })}));
@@ -131,11 +161,52 @@
           new Chart(document.getElementById('UsersWithContacts'), this.basePieChart([((data.users_count - data.users_with_no_contacts_count) - data.users_with_no_connections_count), data.users_with_no_connections_count], ['Have Connections', 'No Connections']));
           new Chart(document.getElementById('UserContacts'), this.basePieChart([data.user_contacts_count - data.uniq_user_contacts_count, data.uniq_user_contacts_count], ['Duplicate', 'Unique']));
         },
-        getDashboardData() {
-          return fetch(`${API_URL}?access_token=${this.token}`)
+        async getSettings() {
+          return fetch(`${API_URL}/api/v1/settings`).then(response => response.json()).then(data => {
+            this.settings = data;
+            Alpine.nextTick(() => this.initSortable());
+          });
+        },
+        async getDashboardData() {
+          return fetch(`${API_URL}/api/integrations/dashboard?access_token=${this.token}`)
             .then(response => response.json())
             .then(data => this.data = data.records[0])
-            .catch(error => this.error = error)
+            .catch(error => console.log(this.error = error))
+        },
+        initSortable() {
+          document.querySelectorAll('tr.option td').forEach(el => new Sortable(el));
+          document.querySelectorAll('.category.box tbody').forEach(el => new Sortable(el));
+          new Sortable(document.getElementById('categories'));
+        },
+        updateSettings() {
+          return fetch(`${API_URL}/api/v1/settings`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: { categories: JSON.stringify(this.currentSettings()) }
+          }).catch(error => console.log(this.error = error))
+        },
+        currentSettings() {
+          return Array.from(document.querySelectorAll('.category.box')).map((c,index) => {
+            return {
+              id: c.dataset.id,
+              position: index,
+              ad_option_types: Array.from(c.querySelectorAll('tr.option')).map((o, index) => {
+                return {
+                  id: o.dataset.id,
+                  position: index,
+                  values: Array.from(o.querySelectorAll('td')[1].querySelectorAll('span')).map((s, index) => {
+                    return {
+                      id: s.dataset.id,
+                      // name: s.innerText,
+                      position: index,
+                    }
+                  })
+                }
+              })
+            }
+          })
         },
         timeLineChart (chartName, data, timeUnit) {
           return {
