@@ -182,7 +182,8 @@
           return fetch(`${API_URL}/api/v1/settings`, {
             method: "PUT",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              "X-User-Access-Token": this.token,
             },
             body: { categories: JSON.stringify(this.currentSettings()) }
           }).catch(error => console.log(this.error = error))
