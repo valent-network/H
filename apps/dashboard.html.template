@@ -185,7 +185,7 @@
               "Content-Type": "application/json",
               "X-User-Access-Token": this.token,
             },
-            body: { categories: JSON.stringify(this.currentSettings()) }
+            body: JSON.stringify({ categories: this.currentSettings() })
           }).catch(error => console.log(this.error = error))
         },
         currentSettings() {
