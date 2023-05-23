@@ -259,7 +259,7 @@
                 "Content-Type": "application/json",
                 "X-User-Access-Token": this.token
               }
-            }).then(response => response).then(data => item.classList.add("is-danger"))
+            }).then(response => response).then(data => item.classList.add("is-danger") && (item.dataset.id = undefined)))
           } else if (from.dataset.groupName == "") {
             fetch(`${API_URL}/api/admin/filterable_values`, {
               method: "POST",
@@ -268,7 +268,7 @@
                 "X-User-Access-Token": this.token
               },
               body: JSON.stringify({"ad_option_type_id": optionId, "group_name": to.dataset.groupName, "raw_value": item.innerText})
-            }).then(response => response).then(data => item.classList.remove("is-danger"))
+            }).then(response => response.json()).then(data => item.classList.remove("is-danger") && (item.dataset.id = data.id))
           } else {
             fetch(`${API_URL}/api/admin/filterable_values/${item.dataset.id}`, {
               method: "PUT",
