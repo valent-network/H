@@ -15,6 +15,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <script src="https://raw.githack.com/SortableJS/Sortable/master/Sortable.js"></script>
+  <style>
+    .filterable-values {
+      min-height: 2em;
+      border: #efefef dashed 1px;
+      border-radius: 4px;
+      padding: 4px;
+    }
+  </style>
 </head>
 <body x-data="App">
   <div class="container is-fluid mt-4">
@@ -106,7 +114,7 @@
         </template>
 
         <template x-if="settings">
-          <div class="mb-6">
+          <div class="mb-6" x-init="$nextTick(() => initSortable())">
             <div id="categories">
               <template x-for="category in settings.categories.sort((a,b) => a.position - b.position)" x-i>
                 <div x-bind:data-id="category.id" class="category box">
@@ -115,7 +123,11 @@
                     <tbody>
                       <template x-for="option in category.ad_option_types.sort((a,b) => a.position - b.position)">
                         <tr x-bind:data-id="option.id" class="option">
-                          <td x-text="option.localized_name"></td>
+                          <td>
+                            <a @click="openModal(category, option)">
+                              <span x-text="option.localized_name"></span>
+                            </a>
+                          </td>
                           <td>
                             <template x-for="value in option.values.sort((a,b) => a.position - b.position)">
                               <span x-bind:data-id="value.id" class="option-value tag mr-1 mb-1 is-light is-link" x-text="value.name"></span>
@@ -131,6 +143,39 @@
               <button @click="updateSettings()" class="button is-light is-info">Update</button>
             </div>
         </template>
+        <template x-if="modal.open">
+          <div id="modal" class="modal" :class="modal.open && 'is-active'">
+            <div @click="modal.open = false" class="modal-background"></div>
+            <div class="modal-content">
+              <div class="box">
+                <h1 class="title is-1 has-text-grey-lighter" x-text="modal.categoryName"></h1>
+                <h2 class="subtitle is-2 has-text-grey" x-text="modal.optionName"></h2>
+                <div data-group-name="" class="filterable-values block">
+                  <template x-for="knownValue in modal.known">
+                    <span class="tag is-light is-danger mr-1 mb-1" x-text="knownValue"></span>
+                  </template>
+                </div>
+                <template x-for="groupName in Object.keys(modal.values)">
+                  <div>
+                    <div class="columns">
+                      <div class="column is-4">
+                        <span class="tag is-light is-success" x-text="groupName"></span>
+                      </div>
+                      <div class="column">
+                        <div x-bind:data-group-name="groupName" class="filterable-values">
+                          <template x-for="value in modal.values[groupName]">
+                            <span class="tag is-light mr-1 mb-1" x-bind:data-id="value.id" x-text="value.raw_value"></span>
+                          </template>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+            <button class="modal-close is-large" aria-label="close"></button>
+          </div>
+        </template>
       </div>
     </template>
   </div>
@@ -144,6 +189,14 @@
         data: Alpine.$persist(null).as('dashboard.data'),
         settings: null,
         error: null,
+        modal: {
+          open: false,
+          category: {},
+          option: {},
+          known: [],
+          values: [],
+        },
+        modalOpen: false,
         init() {
           this.getDashboardData();
           this.getSettings();
@@ -164,7 +217,7 @@
         async getSettings() {
           return fetch(`${API_URL}/api/v1/settings`).then(response => response.json()).then(data => {
             this.settings = data;
-            Alpine.nextTick(() => this.initSortable());
+            // Alpine.nextTick(() => this.initSortable());
           });
         },
         async getDashboardData() {
@@ -178,8 +231,57 @@
           document.querySelectorAll('.category.box tbody').forEach(el => new Sortable(el));
           new Sortable(document.getElementById('categories'));
         },
+        openModal(category, option) {
+          this.modal = { categoryName: category.name, optionName: option.localized_name, known: [], values: [], open: true }
+          fetch(`${API_URL}/api/admin/filterable_values?access_token=${this.token}&ad_option_type_id=${option.id}`)
+            .then(response => response.json())
+            .then(data => {
+              this.modal.known = data.known_options
+              this.modal.values = data.filterable_values
+              Alpine.nextTick(() => document.querySelectorAll('.filterable-values').forEach(el => new Sortable(el, {
+                group: 'fitlerable-value',
+                sort: false,
+                onEnd: (evt) => {
+                  this.manageFilterableValue({ to: evt.to, from: evt.from, item: evt.item, optionId: option.id});
+                }
+              })))
+             })
+            .catch(error => console.log(this.error = error))
+        },
+        manageFilterableValue({ to, from, item, optionId }) {
+          if (to === from) {
+            return;
+          } else if (to.dataset.groupName === "") {
+            fetch(`${API_URL}/api/admin/filterable_values/${item.dataset.id}`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                "X-User-Access-Token": this.token
+              }
+            })
+          } else if (from.dataset.groupName == "") {
+            fetch(`${API_URL}/api/admin/filterable_values`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-User-Access-Token": this.token
+              },
+              body: JSON.stringify({"ad_option_type_id": optionId, "group_name": to.dataset.groupName, "raw_value": item.dataset.rawValue})
+            })
+          } else {
+            fetch(`${API_URL}/api/admin/filterable_values/${item.dataset.id}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "X-User-Access-Token": this.token
+              },
+              body: JSON.stringify({group_name: to.dataset.groupName})
+            })
+          }
+
+        },
         updateSettings() {
-          return fetch(`${API_URL}/api/v1/settings`, {
+          return fetch(`${API_URL}/api/admin/settings`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
