@@ -22,6 +22,7 @@
       border-radius: 4px;
       padding: 4px;
     }
+    .red-border { border-color: #a11; }
   </style>
 </head>
 <body x-data="App">
@@ -150,7 +151,7 @@
               <div class="box">
                 <h1 class="title is-1 has-text-grey-lighter" x-text="modal.categoryName"></h1>
                 <h2 class="subtitle is-2 has-text-grey" x-text="modal.optionName"></h2>
-                <div data-group-name="" class="filterable-values block">
+                <div data-group-name="" class="filterable-values red-border block">
                   <template x-for="knownValue in modal.known">
                     <span class="tag is-light is-danger mr-1 mb-1" x-text="knownValue"></span>
                   </template>
@@ -266,8 +267,8 @@
                 "Content-Type": "application/json",
                 "X-User-Access-Token": this.token
               },
-              body: JSON.stringify({"ad_option_type_id": optionId, "group_name": to.dataset.groupName, "raw_value": item.innerText}).then(response => response).then(data => item.classList.remove("is-danger"))
-            })
+              body: JSON.stringify({"ad_option_type_id": optionId, "group_name": to.dataset.groupName, "raw_value": item.innerText})
+            }).then(response => response).then(data => item.classList.remove("is-danger"))
           } else {
             fetch(`${API_URL}/api/admin/filterable_values/${item.dataset.id}`, {
               method: "PUT",
