@@ -259,7 +259,7 @@
                 "Content-Type": "application/json",
                 "X-User-Access-Token": this.token
               }
-            }).then(response => response).then(data => item.classList.add("is-danger") && (item.dataset.id = undefined)))
+            }).then(response => response).then(data => item.classList.add("is-danger") && (item.dataset.id = undefined))
           } else if (from.dataset.groupName == "") {
             fetch(`${API_URL}/api/admin/filterable_values`, {
               method: "POST",
