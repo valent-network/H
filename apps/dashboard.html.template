@@ -266,7 +266,7 @@
                 "Content-Type": "application/json",
                 "X-User-Access-Token": this.token
               },
-              body: JSON.stringify({"ad_option_type_id": optionId, "group_name": to.dataset.groupName, "raw_value": item.dataset.rawValue})
+              body: JSON.stringify({"ad_option_type_id": optionId, "group_name": to.dataset.groupName, "raw_value": item.innerText})
             })
           } else {
             fetch(`${API_URL}/api/admin/filterable_values/${item.dataset.id}`, {
