@@ -10,6 +10,8 @@ ADD apps apps
 COPY default.conf /default.conf.template
 COPY nginx.conf /nginx.conf.template
 
+COPY apps/error.html /var/www/nginx/error/error.html
+
 COPY entrypoint.sh /
 
 RUN chmod +x /entrypoint.sh

@@ -14,7 +14,7 @@ cat /nginx.conf.template | envsubst '$VALENT_PUMA_URL' > /etc/nginx/nginx.conf
 mkdir -p /var/www/nginx/budget      && cat /apps/budget.html.template       | envsubst '$BUDGET_BASE_PATH $VALENT_API_HOST' > /var/www/nginx/budget/index.html
 mkdir -p /var/www/nginx/dashboard   && cat /apps/dashboard.html.template    | envsubst '$VALENT_API_HOST'                   > /var/www/nginx/dashboard/index.html
 mkdir -p /var/www/nginx/ads         && cat /apps/ad.html.template           | envsubst '$VALENT_API_HOST'                   > /var/www/nginx/ads/index.html
-mkdir -p /var/www/nginx/manager     && cat /apps/manager.html.template      | envsubst '$VALENT_API_HOST'                                   > /var/www/nginx/manager/index.html
+mkdir -p /var/www/nginx/manager     && cat /apps/manager.html.template      | envsubst '$VALENT_API_HOST'                   > /var/www/nginx/manager/index.html
 
 mv /apps/landing /var/www/nginx
 
