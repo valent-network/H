@@ -93,7 +93,26 @@
 
     <template x-if="currentRoute === '/:maker/:model/:year'">
       <div class="box">
-        <a x-on:click.prevent="history.back()" href="#" x-text="`← ${params.maker} ${params.model}`"></a>
+        <a x-bind:href="`$BUDGET_BASE_PATH/${params.maker}/${params.model}`" x-text="`← ${params.maker} ${params.model}`"></a>
+        <h1 class="is-size-1">
+          <b x-text="params.maker"></b>
+          <span x-text="params.model"></span>
+          <span x-text="params.year"></span>
+        </h1>
+
+        <p x-text="JSON.stringify()"></p>
+
+        <div x-data="{regions:JSON.parse(records.find(r => [r.maker, r.model, r.year].join() === [params.maker, params.model, params.year].join() ).regions)}">
+          <template x-for="region in Object.keys(regions)">
+            <p x-html="`${region} — <a href='$BUDGET_BASE_PATH/${params.maker}/${params.model}/${params.year}/ads'><b>${regions[region]}</b> оголошень</a>`"></p>
+          </template>
+        </ul>
+      </div>
+    </template>
+
+    <template x-if="currentRoute === '/:maker/:model/:year/ads'">
+      <div class="box">
+        <a x-bind:href="`$BUDGET_BASE_PATH/${params.maker}/${params.model}/${params.year}`" href="#" x-text="`← ${params.maker} ${params.model} ${params.year}`"></a>
         <h1 class="title is-size-1 has-text-centered">Рекаріо!</h1>
         <p><b>СТОП</b>. Цей час настав — купуй автомобілі по-новому!</p>
         <p>Тільки у друзів та знайомих за рекомендацією.</p>
@@ -105,9 +124,6 @@
 
   <footer class="footer">
     <div class="content has-text-centered">
-      <a href="/news">
-        <i class="is-size-3 mr-3 fa fa-telegram big-icon"></i>
-      </a>
       <a href="/ios">
         <i class="is-size-3 mr-3 fa fa-apple big-icon"></i>
       </a>
@@ -148,10 +164,19 @@
             this.params = { maker: decodeURI(route.split("/")[1]) , model: decodeURI(route.split("/")[2]) }
             this.currentRoute = "/:maker/:model";
             document.title = `recar.io | Купити ${this.params.maker} ${this.params.model} за $${this.budget}`
+          } else if ((/^\/\d+./.test(route))) {
+            this.params = { budget: decodeURI(route.split("/")[1]) }
+            this.budget = this.params.budget;
+            this.currentRoute = "/";
+            document.title = `recar.io | Авто у бюджеті $${this.params.price}`
           } else if (/^\/[^\/]+\/[^\/]+\/\d\d\d\d(\/)?$/.test(route)) {
             this.params = { maker: decodeURI(route.split("/")[1]) , model: decodeURI(route.split("/")[2]), year: decodeURI(route.split("/")[3]) }
             this.currentRoute = "/:maker/:model/:year";
             document.title = `recar.io | Купити ${this.params.maker} ${this.params.model} ${this.params.year} р.`
+          } else if (/^\/[^\/]+\/[^\/]+\/\d\d\d\d\/ads(\/)?$/.test(route)) {
+            this.params = { maker: decodeURI(route.split("/")[1]) , model: decodeURI(route.split("/")[2]), year: decodeURI(route.split("/")[3]) }
+            this.currentRoute = "/:maker/:model/:year/ads";
+            document.title = `recar.io | Завантажити додаток`
           } else {
             this.currentRoute = "/404";
           }
