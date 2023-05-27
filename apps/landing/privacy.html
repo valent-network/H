@@ -2,6 +2,17 @@
   <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <!--Countly script-->
+    <script type='text/javascript' src='https://cdn.jsdelivr.net/npm/countly-sdk-web@latest/lib/countly.min.js'></script>
+    <script type='text/javascript'>
+
+      Countly.init({
+        app_key: "5e489a68ae8bc064044601de7d25dedb25a0afc2",
+        url: "https://global-countly.dev.viktorvsk.com"
+      });
+      Countly.track_sessions();
+      Countly.track_pageview();
+    </script>
   </head>
   <body>
     <nav class="navbar is-black has-shadow" role="navigation" aria-label="main navigation">
