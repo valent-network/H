@@ -17,6 +17,10 @@
     <meta content='recar.io' property='og:site_name'>
     <meta content='Оголошення друзів та знайомих про покупку чи продаж товарів та послуг в Україні' property='og:description'>
 
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script type="text/javascript" src="/js/CheckApp.js"></script>
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style>
@@ -64,7 +68,6 @@
           </header>
         </div>
 
-        <!-- Header Section -->
         <section class="hero is-danger mt-6 mb-6 p-2">
           <div class="container">
             <div class="columns">
@@ -108,9 +111,7 @@
           </div>
         </section>
 
-        <!-- Main Content Section -->
         <section class="container p-2">
-          <!-- Feature Highlights -->
           <div class="columns">
             <div class="column is-4">
               <div class="has-text-centered">
@@ -132,7 +133,6 @@
             </div>
           </div>
 
-          <!-- How It Works -->
           <div class="block">
             <h3 class="title is-size-1 has-text-centered mt-6 mb-6">Як це працює?</h3>
             <div class="">
@@ -146,7 +146,6 @@
           </div> 
         </section>
 
-          <!-- Benefits of Personal Connections -->
           <section class="hero is-danger mt-6 mb-6 p-2">
             <div class="container">
               <h3 class="title is-size-1 has-text-centered mt-6 mb-6">Чому саме друзі та знайомі?</h3>
@@ -176,24 +175,126 @@
         </section>
 
         <section class="container p-2">
-          <!-- Call to Action -->
           <div class="block">
-            <h3 class="title is-size-1 mt-6">Приєднуйся до Рекаріо!</h3>
-            <h4 class="subtitle is-size-4">Або саме зараз дізнайся, що цікавого на тебе чекає</h4>
-
-            <div class="field is-horizontal">
-              <div class="field-label is-normal">
-                <label class="label">From</label>
-              </div>
-              <div class="field-body">
-                <div class="field">
-                  <p class="control">
-                    <input class="input" type="email" value="me@example.com" readonly>
+            <h3 class="title is-size-1 mt-6">Саме зараз спробуйте Рекаріо та дізнайтесь, що на вас чекає!</h3>
+            <div x-data="CheckApp">
+              <div class="columns">
+                <div class="column">
+                  <p class="block">
+                    Введіть номер свого телефону (отримайте SMS повідомлення для підтвердження номера) та дізнайтеся, що цікавого може дати Рекаріо саме вам, саме зараз: скільки ваших друзів вже з нами, чи пропонують вони щось, які в них охоплення тощо
                   </p>
+                </div>
+                <div class="column">
+                  <div x-show="error" class="has-text-centered block mb-4">
+                    <div class="notification is-danger" x-text="error"></div>
+                  </div>
+
+                  <template x-if="authStep === 0">
+                    <div class="field has-addons">
+                      <div class="control has-icons-left" :class="isLoading && 'is-loading'">
+                        <input @keyup="phone = phone.replace(/[^\d]+/g, '').substr(0, 12).replace(/^(.*)$/, '+$1')" class="input is-rounded" :class="/^\+380\d{9}$/.test(phone) && !isLoading && 'is-success'" type="phone" placeholder="Номер телефону" x-model.fill="phone" value="+380">
+                        <span class="icon is-small is-left" :class="/^\+380\d{9}$/.test(phone) && !isLoading && 'has-text-success'">
+                          <i class="fa fa-phone"></i>
+                        </span>
+                      </div>
+
+                      <div class="control">
+                        <button @click="requestSMS()" class="button is-info is-rounded" x-bind:disabled="!/^\+380\d{9}$/.test(phone) || isLoading">
+                          Отримати SMS код
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <template x-if="authStep === 1">
+                    <div class="field has-addons">
+                      <div class="control has-icons-left" :class="isLoading && 'is-loading'">
+                        <input @keyup="code = code.replace(/[^\d]+/g, '').substr(0, 4)" class="input is-rounded" :class="/^\d{4}$/.test(code) && !isLoading && 'is-success'" type="text" placeholder="Код із SMS" x-model.fill="code">
+                        <span class="icon is-small is-left"  :class="/^\d{4}$/.test(code) && !isLoading && 'has-text-success'">
+                          <i class="fa fa-lock"></i>
+                        </span>
+                      </div>
+
+                      <div class="control">
+                        <button @click="submitCode()" class="button is-info is-rounded" x-bind:disabled="!/^\d{4}$/.test(code) || isLoading">
+                          Відправити код
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <div x-show="isLoading" class="has-text-centered block">
+                    <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                  </div>
+
+                  <template x-if="stats">
+                    <div class="box">
+                      <template x-if="authStep > 0">
+                        <div>
+                          <p class="tag is-rounded is-medium" x-text="phone"></p>
+                          <a @click="logout()" class="is-light is-link is-medium is-rounded tag">Змінити номер</a>
+                        </div>
+                      </template>
+                      <table class="table mt-4">
+                        <tbody>
+                          <tr>
+                            <td class="has-text-centered">Можливі друзі</td>
+                            <td class="has-text-centered"><b x-text="stats.know_me_count"></b></td>
+                            <td>Ці люди знають вас, мабуть, хтось з них — ваші друзі чи товариші</td>
+                          </tr>
+                          <tr>
+                            <td class="has-text-centered">Оголошень друзів</td>
+                            <td class="has-text-centered"><b x-text="stats.estimated_ads"></b></td>
+                            <td>Стільки оголошень розмістили ваші потенційні друзі самойстійно</td>
+                          </tr>
+                          <tr>
+                            <td class="has-text-centered">Оголошень у стрічці</td>
+                            <td class="has-text-centered"><b x-text="stats.estimated_visibility"></b></td>
+                            <td>Стільки оголошень ви побачите, якщо дійсно знайомі з усіма можливими друзями</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+                        <thead>
+                          <tr>
+                            <th>Телефон</th>
+                            <th>Кількість оголошень</th>
+                            <th>Охоплення</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <template x-for="contact in stats.user_contacts">
+                            <tr>
+                              <td x-text="contact.phone_number"></td>
+                              <td x-text="contact.ads_count"></td>
+                              <td x-text="contact.potential_reach"></td>
+                            </tr>
+                          </template>
+                        </tbody>
+                      </table>
+
+                      <div x-data="{phoneNumber: null}">
+                        <div class="field has-addons">
+                          <div class="control has-icons-left">
+                            <input @keyup="phoneNumber = phoneNumber.replace(/[^\d]+/g, '').substr(0, 12).replace(/^(.*)$/, '+$1')" class="input is-rounded" :class="/^\+380\d{9}$/.test(phoneNumber) && !isLoading && 'is-success'" type="phone" placeholder="Номер телефону друга" x-model.fill="phoneNumber" value="+380">
+                            <span class="icon is-small is-left"  :class="/^\+380\d{9}$/.test(phoneNumber) && !isLoading && 'has-text-success'">
+                              <i class="fa fa-phone"></i>
+                            </span>
+                          </div>
+
+                          <div class="control">
+                            <button @click="uploadContact(phoneNumber)" class="button is-success is-rounded" x-bind:disabled="!/^\+380\d{9}$/.test(phoneNumber) || isLoading">
+                              Перевірити
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </div>
             </div>
-
           </div>
         </section>
 
