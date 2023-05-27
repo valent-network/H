@@ -1,5 +1,5 @@
 function CheckApp() {
-  const API_HOST = "http://localhost:3000";
+  const API_HOST = "https://recar.io";
 
   return {
     init() {
