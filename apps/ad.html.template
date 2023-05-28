@@ -108,7 +108,7 @@
     function App() {
       return {
         init() {
-          const id = window.location.pathname.match(/\/(\d+)\/?$/)[1];
+          const id = window.location.pathname.split("/").filter(q => q.length > 0)[1];
           fetch(`${API_URL}/${id}/`).then(response => response.json()).then(data => {
             this.data = data;
             document.title = `Рекаріо | ${data.title} ${data.short_description} $${data.price} ${data.options.location[1]}`;
